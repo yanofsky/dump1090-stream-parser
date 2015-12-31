@@ -1,6 +1,6 @@
 # dump1090 stream parser
 
-This software takes a dump1090 stream and plops it into a sqlite database with a timestamp.
+This software takes a [dump1090](https://github.com/antirez/dump1090) stream of [ADS-B](https://en.wikipedia.org/wiki/Automatic_dependent_surveillance_%E2%80%93_broadcast) messages and plops them into a sqlite database with a timestamp.
 
 ## Useage
 
@@ -45,7 +45,7 @@ optional arguments:
                         to query it. Defaults to 50
 ```
 
-## examples
+## Examples
 
 ### Connecting to dump1090 instance running on a raspberry pi on your local network 
 
