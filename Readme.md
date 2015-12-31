@@ -47,30 +47,29 @@ optional arguments:
 
 ## Examples
 
-### Connecting to dump1090 instance running on a raspberry pi on your local network 
+Connecting to dump1090 instance running on a raspberry pi on your local network 
 
 ```
 python dump1090-stream-parser.py -l raspberrypi.local
 ```
 
-### Using a database in a different directory
+Using a database in a different directory
 
 ```
 python dump1090-stream-parser.py -d /path/to/database.db
 ```
 
-### Write every record to the database immediately instead of batching insertions 
+Write every record to the database immediately instead of batching insertions 
 ```
 python dump1090-stream-parser.py --batch-size 1
 ```
 
-### Read larger chunks from the stream
+Read larger chunks from the stream
 ```
 python dump1090-stream-parser.py --buffer-size 1024
 ```
 
-### A combination
+Connect to the local machine via ip address and save records in 20 line batches to todays_squitters.db
 ```
-# connect to the local machine via ip address and save records in 20 line batches to todays_squitters.db
 python dump1090-stream-parser.py -l 127.0.0.1 -d todays_squitters.db --batch-size 20
 ```
