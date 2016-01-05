@@ -13,6 +13,8 @@ PORT = 30003
 DB = "adsb_messages.db"
 BUFFER_SIZE = 100
 BATCH_SIZE = 50
+CONNECT_ATTEMPT_LIMIT = 10
+CONNECT_ATTEMPT_DELAY = 5.0
 
 
 def main():
@@ -24,6 +26,8 @@ def main():
 	parser.add_argument("-d", "--database", type=str, default=DB, help="The location of a database file to use or create. Defaults to %s" % (DB,))
 	parser.add_argument("--buffer-size", type=int, default=BUFFER_SIZE, help="An integer of the number of bytes to read at a time from the stream. Defaults to %s" % (BUFFER_SIZE,))
 	parser.add_argument("--batch-size", type=int, default=BATCH_SIZE, help="An integer of the number of rows to write to the database at a time. A lower number makes it more likely that your database will be locked when you try to query it. Defaults to %s" % (BATCH_SIZE,))
+	parser.add_argument("--connect-attempt-limit", type=int, default=CONNECT_ATTEMPT_LIMIT, help="An integer of the number of times to try (and fail) to connect to the dump1090 broadcast before qutting. Defaults to %s" % (CONNECT_ATTEMPT_LIMIT,))
+	parser.add_argument("--connect-attempt-delay", type=float, default=CONNECT_ATTEMPT_DELAY, help="The number of seconds to wait after a failed connection attempt before trying again. Defaults to %s" % (CONNECT_ATTEMPT_DELAY,))
 
 	# parse command line options
 	args = parser.parse_args()
@@ -31,6 +35,7 @@ def main():
 	# print args.accumulate(args.in)
 	count_since_commit = 0
 	count_total = 0
+	count_failed_connection_attempts = 1
 
 	# connect to database or create if it doesn't exist
 	conn = sqlite3.connect(args.database)
@@ -66,12 +71,17 @@ def main():
 	""")
 
 	# open a socket connection
-	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	try:
-		s.connect((args.location, args.port))
-		print "Connected to dump1090 broadcast"
-	except socket.error:
-		print "Cannot connect to dump1090 broadcast"
+	while count_failed_connection_attempts < args.connect_attempt_limit:
+		try:
+			s = connect_to_socket(args.location, args.port)
+			count_failed_connection_attempts = 1
+			print "Connected to dump1090 broadcast"
+			break
+		except socket.error:
+			count_failed_connection_attempts += 1
+			print "Cannot connect to dump1090 broadcast. Making attempt %s." % (count_failed_connection_attempts)
+			time.sleep(args.connect_attempt_delay)
+	else:
 		quit()
 
 	data_str = ""
@@ -95,14 +105,21 @@ def main():
 
 			if len(message) == 0:
 				print ts, "No broadcast received. Attempting to reconnect"
-				time.sleep(5)
+				time.sleep(args.connect_attempt_delay)
 				s.close()
-				try:
-					s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-					s.connect((args.location, args.port))
-					print ts, "Reconnected!"
-				except socket.error:
-					print ts, "the attempt failed"
+
+				while count_failed_connection_attempts < args.connect_attempt_limit:
+					try:
+						s = connect_to_socket(args.location, args.port)
+						count_failed_connection_attempts = 1
+						print "Reconnected!"
+						break
+					except socket.error:
+						count_failed_connection_attempts += 1
+						print "The attempt failed. Making attempt %s." % (count_failed_connection_attempts)
+						time.sleep(args.connect_attempt_delay)
+				else:
+					quit()
 
 				continue
 
@@ -184,6 +201,10 @@ def main():
 		print "Error with ", line
 		quit()
 
+def connect_to_socket(loc,port):
+	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	s.connect((loc, port))
+	return s
 
 if __name__ == '__main__':
 	main()

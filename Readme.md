@@ -22,6 +22,8 @@ Stop the stream by hitting control + c. This will write any remaining uncommitte
 usage: dump1090-stream-parser.py [-h] [-l LOCATION] [-p PORT] [-d DATABASE]
                                  [--buffer-size BUFFER_SIZE]
                                  [--batch-size BATCH_SIZE]
+                                 [--connect-attempt-limit CONNECT_ATTEMPT_LIMIT]
+                                 [--connect-attempt-delay CONNECT_ATTEMPT_DELAY]
 
 A program to process dump1090 messages then insert them into a database
 
@@ -43,6 +45,14 @@ optional arguments:
                         database at a time. A lower number makes it more
                         likely that your database will be locked when you try
                         to query it. Defaults to 50
+  --connect-attempt-limit CONNECT_ATTEMPT_LIMIT
+                        An integer of the number of times to try (and fail) to
+                        connect to the dump1090 broadcast before qutting.
+                        Defaults to 10
+  --connect-attempt-delay CONNECT_ATTEMPT_DELAY
+                        The number of seconds to wait after a failed
+                        connection attempt before trying again. Defaults to
+                        5.0
 ```
 
 ## Examples
