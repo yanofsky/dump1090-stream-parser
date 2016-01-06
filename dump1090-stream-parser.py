@@ -40,6 +40,7 @@ def main():
 	# connect to database or create if it doesn't exist
 	conn = sqlite3.connect(args.database)
 	cur = conn.cursor()
+	cur.execute('PRAGMA journal_mode=wal')
 
 	# set up the table if neccassary
 	cur.execute("""CREATE TABLE IF NOT EXISTS
