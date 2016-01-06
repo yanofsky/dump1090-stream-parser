@@ -12,7 +12,7 @@ HOST = "localhost"
 PORT = 30003
 DB = "adsb_messages.db"
 BUFFER_SIZE = 100
-BATCH_SIZE = 50
+BATCH_SIZE = 1
 CONNECT_ATTEMPT_LIMIT = 10
 CONNECT_ATTEMPT_DELAY = 5.0
 
@@ -70,6 +70,8 @@ def main():
 			parsed_time TEXT
 		)
 	""")
+
+	start_time = datetime.datetime.utcnow()
 
 	# open a socket connection
 	while count_failed_connection_attempts < args.connect_attempt_limit:
@@ -175,6 +177,7 @@ def main():
 						# commit the new rows to the database in batches
 						if count_since_commit % args.batch_size == 0:
 							conn.commit()
+							print "averging %s rows per second" % (float(count_total) / (cur_time - start_time).total_seconds(),)
 							if count_since_commit > args.batch_size:
 								print ts, "All caught up, %s rows, successfully written to database" % (count_since_commit)
 							count_since_commit = 0
