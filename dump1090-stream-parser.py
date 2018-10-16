@@ -68,7 +68,32 @@ def main():
 			spi INT,
 			is_on_ground INT,
 			parsed_time TEXT
-		)
+		);
+        """)
+
+        cur.execute("""
+                CREATE VIEW IF NOT EXISTS callsigns AS
+                  SELECT callsign, hex_ident, max(parsed_time) last_seen, min(parsed_time) first_seen
+                    FROM squitters
+                    WHERE callsign != ""
+                    GROUP BY callsign, hex_ident;
+        """)
+
+        cur.execute("""
+                CREATE VIEW IF NOT EXISTS locations AS
+                  SELECT hex_ident, parsed_time, lon, lat, altitude
+                    FROM squitters WHERE lat != "";
+        """)
+
+        cur.execute("""
+                CREATE VIEW IF NOT EXISTS flights AS
+                  SELECT l.*, cs.callsign
+                    FROM locations l
+                    JOIN callsigns cs
+                      ON (l.hex_ident = cs.hex_ident
+                          and l.parsed_time <= cs.last_seen
+                          and l.parsed_time >= cs.first_seen);
+
 	""")
 
 	start_time = datetime.datetime.utcnow()
@@ -88,6 +113,7 @@ def main():
 		quit()
 
 	data_str = ""
+        last_time = start_time
 
 	try:
 		#loop until an exception
@@ -177,10 +203,11 @@ def main():
 						# commit the new rows to the database in batches
 						if count_since_commit % args.batch_size == 0:
 							conn.commit()
-							print "averging %s rows per second" % (float(count_total) / (cur_time - start_time).total_seconds(),)
+							print "averging %s rows per second, immediate rate %s rows per second" % (float(count_total) / (cur_time - start_time).total_seconds(),float(count_since_commit) / (cur_time - last_time).total_seconds())
 							if count_since_commit > args.batch_size:
 								print ts, "All caught up, %s rows, successfully written to database" % (count_since_commit)
 							count_since_commit = 0
+                                                        last_time = cur_time
 
 					except sqlite3.OperationalError:
 						print ts, "Could not write to database, will try to insert %s rows on next commit" % (count_since_commit + args.batch_size,)
