@@ -91,7 +91,7 @@ every row will have the callsign associated with an aircraft.  To help
 make this data more useful, there are several convience views in the
 default database schema:
 
-### Callsigns VIEW 
+### Callsigns VIEW
 
 The view `callsigns` provides a mapping of callsigns to the hex_ident
 that should be present in every message. Callsigns are (mostly) human
@@ -145,7 +145,7 @@ A8F63B|2018-10-16T03:42:25.996247|-121.94053|37.91309|17550
 A8F63B|2018-10-16T03:42:44.017090|-121.89952|37.91708|18350
 ```
 
-### Flgihts VIEW
+### Flights VIEW
 
 The view `flights` joins up the previous two views to attempt to provide
 a unified view of particular flights.
