@@ -203,7 +203,10 @@ def main():
 						# commit the new rows to the database in batches
 						if count_since_commit % args.batch_size == 0:
 							conn.commit()
-							print "averging %s rows per second, immediate rate %s rows per second" % (float(count_total) / (cur_time - start_time).total_seconds(),float(count_since_commit) / (cur_time - last_time).total_seconds())
+                                                        if cur_time != last_time:
+                                                            print "averging %s rows per second, immediate rate %s rows per second" % (float(count_total) / (cur_time - start_time).total_seconds(),float(count_since_commit) / (cur_time - last_time).total_seconds())
+                                                        else:
+                                                            print "averging %s rows per second" % (float(count_total) / (cur_time - start_time).total_seconds(),)
 							if count_since_commit > args.batch_size:
 								print ts, "All caught up, %s rows, successfully written to database" % (count_since_commit)
 							count_since_commit = 0
