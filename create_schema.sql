@@ -27,10 +27,10 @@ CREATE TABLE squitters(
 DROP VIEW IF EXISTS callsigns;
 
 CREATE VIEW IF NOT EXISTS callsigns AS
-  SELECT callsign, hex_ident, max(parsed_time) last_seen, min(parsed_time) first_seen
+  SELECT callsign, hex_ident, date(parsed_time) date_seen, max(parsed_time) last_seen, min(parsed_time) first_seen
     FROM squitters 
     WHERE callsign != ""
-    GROUP BY callsign, hex_ident;
+    GROUP BY callsign, hex_ident, date_seen;
 
 DROP VIEW IF EXISTS locations;
 
@@ -41,9 +41,9 @@ CREATE VIEW IF NOT EXISTS locations AS
 DROP VIEW IF EXISTS flights;
 
 CREATE VIEW IF NOT EXISTS flights AS
-  SELECT l.*, cs.callsign
+  SELECT DISTINCT l.*, cs.callsign
     FROM locations l JOIN callsigns cs
       ON (l.hex_ident = cs.hex_ident
-          and l.parsed_time <= cs.last_seen
-          and l.parsed_time >= cs.first_seen);
+          and l.parsed_time <= strftime('%Y-%m-%dT%H:%M:%S',cs.last_seen, "10 minutes")
+          and l.parsed_time >= strftime('%Y-%m-%dT%H:%M:%S',cs.first_seen,"-10 minutes"));
 

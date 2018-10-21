@@ -93,9 +93,9 @@ default database schema:
 
 ### Callsigns VIEW
 
-The view `callsigns` provides a mapping of callsigns to the hex_ident
-that should be present in every message. Callsigns are (mostly) human
-readable identifiers... usually the flight identifier for commercial
+The view `callsigns` provides a per day mapping of callsigns to the
+hex_ident that should be present in every message. Callsigns are (mostly)
+human readable identifiers... usually the flight number for commercial
 flights (e.g. UAL1601), or the registration number ("N number" in the US)
 for private flights.
 
@@ -112,17 +112,17 @@ a particular hex_ident.
 
 For example, say you want to know when FedEx flights were seen in your area:
 ```
-sqlite> select * from callsigns where callsign like "FDX%";
-FDX1117 |A8F63B|2018-10-16T03:42:18.329565|2018-10-16T03:42:18.329565
-FDX1219 |A03B91|2018-10-16T02:20:18.612135|2018-10-16T02:12:46.242506
-FDX1268 |A76535|2018-10-16T03:31:58.391159|2018-10-16T03:31:58.391159
-FDX1345 |A0B97C|2018-10-16T02:23:24.985153|2018-10-16T02:19:59.279895
-FDX1804 |A90EDE|2018-10-16T04:52:38.946034|2018-10-16T04:49:27.591450
-FDX1813 |ACFC74|2018-10-16T02:33:28.539816|2018-10-16T02:29:01.560380
-FDX1818 |ADC5A6|2018-10-16T04:04:24.114816|2018-10-16T04:01:18.789950
-FDX1837 |A07BB3|2018-10-16T04:56:03.145089|2018-10-16T04:51:52.484677
-FDX1839 |ACC262|2018-10-16T04:37:24.964137|2018-10-16T04:33:34.945958
-FDX2642 |A8EB16|2018-10-16T02:35:41.701467|2018-10-16T02:28:09.004902
+sqlite> select callsign, hex_ident, date_seen, first_seen, last_seen from callsigns where callsign like 'FDX%' limit 10;
+FDX1167 |A8F63B|2018-10-16|2018-10-16T12:03:50.762491|2018-10-16T12:08:02.342313
+FDX1167 |AA01E7|2018-10-17|2018-10-17T11:23:47.560089|2018-10-17T11:26:42.926003
+FDX12   |AC1E56|2018-10-16|2018-10-16T05:46:00.927919|2018-10-16T05:48:25.557328
+FDX12   |AC5FD6|2018-10-17|2018-10-17T06:38:02.982087|2018-10-17T06:41:12.678365
+FDX1213 |A9C1C5|2018-10-17|2018-10-17T02:26:48.864018|2018-10-17T02:29:33.611975
+FDX1268 |A841F5|2018-10-17|2018-10-17T02:43:15.714889|2018-10-17T02:43:15.714889
+FDX1345 |A0B5C5|2018-10-17|2018-10-17T02:03:56.482701|2018-10-17T02:07:00.170058
+FDX1413 |A69C03|2018-10-17|2018-10-17T12:44:06.227662|2018-10-17T12:47:16.271459
+FDX1419 |A75659|2018-10-17|2018-10-17T11:26:14.485112|2018-10-17T11:28:44.356821
+FDX1419 |A7617E|2018-10-16|2018-10-16T11:53:06.121191|2018-10-16T11:56:36.611446
 ```
 
 ### Locations VIEW
@@ -132,17 +132,19 @@ and altitude) mapped to the hex_ident and time the entry was parsed. Not
 every hex_ident is guaranteed to be associated with a callsign, but most
 will be.
 
-For example, If you wanted to know where the flight FDX1117 went:
+For example, If you wanted to know where the flight FDX1167 went on October 16th:
 ```
-sqlite> select hex_ident, parsed_time, lon, lat, altitude from locations where hex_ident = 'A8F63B';
-A8F63B|2018-10-16T03:40:55.757156|-122.12934|37.89267|13375
-A8F63B|2018-10-16T03:41:08.339089|-122.1042|37.89483|14025
-A8F63B|2018-10-16T03:41:14.433657|-122.092|37.89619|14400
-A8F63B|2018-10-16T03:41:25.115451|-122.07055|37.89867|15050
-A8F63B|2018-10-16T03:42:12.300014|-121.97115|37.90997|16925
-A8F63B|2018-10-16T03:42:23.963731|-121.94514|37.91265|17450
-A8F63B|2018-10-16T03:42:25.996247|-121.94053|37.91309|17550
-A8F63B|2018-10-16T03:42:44.017090|-121.89952|37.91708|18350
+sqlite> select hex_ident, parsed_time, lon, lat, altitude from locations where hex_ident = 'A8F63B' limit 10;
+A8F63B|2018-10-16T12:03:44.667583|-121.84311|37.60638|4650
+A8F63B|2018-10-16T12:03:49.321162|-121.84871|37.60648|4575
+A8F63B|2018-10-16T12:03:52.465988|-121.8524|37.60652|4525
+A8F63B|2018-10-16T12:03:53.579999|-121.85375|37.60657|4525
+A8F63B|2018-10-16T12:03:54.038653|-121.85427|37.60657|4500
+A8F63B|2018-10-16T12:03:57.774146|-121.85866|37.60666|4475
+A8F63B|2018-10-16T12:04:16.189721|-121.88023|37.60695|4350
+A8F63B|2018-10-16T12:04:16.779088|-121.88089|37.60695|4350
+A8F63B|2018-10-16T12:04:17.892429|-121.88221|37.60693|4350
+A8F63B|2018-10-16T12:04:18.352539|-121.88279|37.60693|4350
 ```
 
 ### Flights VIEW
@@ -154,20 +156,20 @@ For example, in the previous case we needed find the hex_ident of a
 particular flight, but with this view you can do both steps in one:
 
 ```
-sqlite> select callsign, parsed_time, lon, lat, altitude from flights where callsign like "FDX1837%" limit 10;
-FDX1837 |2018-10-16T04:51:52.876237|-121.85408|37.54103|5350
-FDX1837 |2018-10-16T04:51:53.859459|-121.85563|37.54121|5325
-FDX1837 |2018-10-16T04:51:55.759206|-121.8585|37.54154|5300
-FDX1837 |2018-10-16T04:51:56.677004|-121.85987|37.54168|5275
-FDX1837 |2018-10-16T04:51:58.577340|-121.86274|37.54201|5250
-FDX1837 |2018-10-16T04:51:59.560406|-121.86423|37.54215|5225
-FDX1837 |2018-10-16T04:52:00.478720|-121.86567|37.5423|5225
-FDX1837 |2018-10-16T04:52:03.754648|-121.8705|37.54284|5200
-FDX1837 |2018-10-16T04:52:05.589905|-121.87327|37.54317|5175
-FDX1837 |2018-10-16T04:52:07.622230|-121.87629|37.5435|5150
+sqlite> select callsign, parsed_time, lon, lat, altitude from flights where callsign like 'FDX1345%' limit 10;
+FDX1345 |2018-10-17T02:03:49.862699|-122.26971|37.68855|4575
+FDX1345 |2018-10-17T02:03:50.846821|-122.26846|37.6892|4625
+FDX1345 |2018-10-17T02:03:53.466993|-122.26523|37.69088|4800
+FDX1345 |2018-10-17T02:03:55.105746|-122.26316|37.69199|4925
+FDX1345 |2018-10-17T02:03:55.499516|-122.26264|37.69221|4950
+FDX1345 |2018-10-17T02:03:56.416630|-122.26153|37.69281|5025
+FDX1345 |2018-10-17T02:03:58.119922|-122.25942|37.69391|5150
+FDX1345 |2018-10-17T02:03:58.578940|-122.25884|37.69418|5200
+FDX1345 |2018-10-17T02:04:02.052030|-122.25449|37.69647|5475
+FDX1345 |2018-10-17T02:04:04.739817|-122.25114|37.69819|5675
 ```
 
-The only limitation is that it will only show locations for a flight that
-fall between the first_seen and last_seen timestamps in the callsigns
-view.  This helps avoid issues when a particular hex_ident is associated
-with more than one callsign.
+The only limitation is that it will only show locations for a flight
+that fall between the 10 minutes before first_seen and 10 minutes after
+last_seen timestamps in the callsigns view.  This helps avoid issues
+when a particular hex_ident is associated with more than one callsign.
